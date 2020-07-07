@@ -14,7 +14,7 @@ const caps = require('ssb-caps')
 
 const stack = Stack({ caps })
   .use(require('ssb-db'))           // << required
-  .use(require('ssb-recps-guard))
+  .use(require('ssb-recps-guard'))
 
 const config = {
   // see ssb-config for other needed config
