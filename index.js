@@ -3,8 +3,11 @@ const isString = (t) => (typeof t === 'string')
 const isEncrypted = isString
 
 module.exports = {
+  name: 'recpsGuard',
   version: require('./package.json').version,
-  manifest: {},
+  manifest: {
+    allowedTypes: 'async'
+  },
   init (ssb, config) {
     const allowedTypes = getAllowedTypes(ssb, config)
 
@@ -28,6 +31,13 @@ module.exports = {
 
       cb(new Error(`recps-guard: public messages of type "${content.type}" not allowed`))
     })
+
+    /* API */
+    return {
+      allowedTypes () {
+        return Array.from(allowedTypes).sort()
+      }
+    }
   }
 }
 

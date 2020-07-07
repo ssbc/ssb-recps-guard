@@ -9,6 +9,7 @@ test('config - allowedTypes', t => {
     }
   }
   const server = Server(config)
+  t.deepEqual(server.recpsGuard.allowedTypes(), config.recpsGuard.allowedTypes.sort(), 'recps.allowedTypes')
 
   console.log('standard behaviour:')
   coreTests(server, t, (err) => {

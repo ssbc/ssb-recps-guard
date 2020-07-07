@@ -1,6 +1,6 @@
 # ssb-recps-guard
 
-Guards against accidentally publishing messages publicly
+Guards against accidentally publishing messages publicly (i.e. unencrypted)
 
 Works by hooking the `publish` method, so **must be installed as the first plugin**
 
@@ -108,3 +108,12 @@ See usage example above.
 We considered overloading the `recps` value with magical values,
 but decided a verbose property which couldn't accidentally be filled was safer.
 
+## API
+
+You can check if `ssb-recps-guard` is installed in your server by looking to
+see if `server.recpsGuard` is present.
+
+### `server.recpsGuard.allowedTypes => [String]`
+
+Returns a (sorted) Array of the types of messages which are allowed to be
+published publicly.
