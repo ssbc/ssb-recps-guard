@@ -4,7 +4,7 @@ module.exports = {
   version: require('./package.json').version,
   manifest: {},
   init (ssb, config) {
-    const allowedTypes = getAllowedTypes(config)
+    const allowedTypes = getAllowedTypes(ssb, config)
 
     ssb.publish.hook((publish, args) => {
       const [content, cb] = args
@@ -24,10 +24,14 @@ module.exports = {
   }
 }
 
-function getAllowedTypes (config) {
+const isString = (t) => (typeof t === 'string')
+function getAllowedTypes (ssb, config) {
   const types = get(config, 'recpsGuard.allowedTypes', [])
 
-  // TODO check all strings
+  if (!types.every(isString)) {
+    ssb.close() // weird, but if we don't do this, tests hang
+    throw new Error('recps-guard: expects allowedTypes to be an Array of Strings')
+  }
 
   return new Set(types)
 }
