@@ -50,9 +50,8 @@ explictly public:
 ```js
 const explicitPublicMsg = {
   type: 'profile'
-  allowPublic: true
+  allowPublic: true // << adding this declares we know this is going public
 }
-// this type was allowed in our config (see above)
 
 server.publish(allowedType, (err, msg) => {
   console.log(msg.value.content)

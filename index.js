@@ -1,4 +1,6 @@
 const get = require('lodash.get')
+const isString = (t) => (typeof t === 'string')
+const isEncrypted = isString
 
 module.exports = {
   version: require('./package.json').version,
@@ -8,9 +10,14 @@ module.exports = {
 
     ssb.publish.hook((publish, args) => {
       const [content, cb] = args
-      // if (typeof content === 'string') return publish(content, cb)
 
-      if (hasRecps(content)) return publish(content, cb)
+      if (isEncrypted(content)) return publish(content, cb)
+      if (hasRecps(content)) {
+        if (content.allowPublic === true) {
+          return cb(new Error('recps-guard: should not have recps && allowPublic, check your code'))
+        }
+        return publish(content, cb)
+      }
 
       if (content.allowPublic === true) {
         delete content.allowPublic
@@ -24,7 +31,6 @@ module.exports = {
   }
 }
 
-const isString = (t) => (typeof t === 'string')
 function getAllowedTypes (ssb, config) {
   const types = get(config, 'recpsGuard.allowedTypes', [])
 
