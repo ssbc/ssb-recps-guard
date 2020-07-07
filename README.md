@@ -26,7 +26,7 @@ const sever = stack(config)
 ```
 
 auto-blocked:
-```
+```js
 const unallowedMsg = { type: 'profile' }
 
 server.publish(unallowedMsg, (err, msg) => {
@@ -35,8 +35,8 @@ server.publish(unallowedMsg, (err, msg) => {
 })
 ```
 
-auto-blocked:
-```
+config-allowed:
+```js
 const allowedMsg = { type: 'contact' }
 // this type was allowed in our config (see above)
 
@@ -47,7 +47,7 @@ server.publish(allowedType, (err, msg) => {
 ```
 
 explictly public:
-```
+```js
 const explicitPublicMsg = {
   type: 'profile'
   allowPublic: true
@@ -63,7 +63,7 @@ server.publish(allowedType, (err, msg) => {
 ```
 
 private: 
-```
+```js
 const privateMsg = {
   type: 'profile'
   recps: ['@ye+QM09iPcDJD6YvQYjoQc7sLF/IFhmNbEqgdzQo3lQ=.ed25519']
