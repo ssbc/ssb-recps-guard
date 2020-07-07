@@ -1,0 +1,34 @@
+{
+  "name": "ssb-recps-guard",
+  "version": "0.0.1",
+  "description": "guards against unencrypted messages being accidentally published!",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test/**/*.test.js | tap-spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ssbc/ssb-recps-guard.git"
+  },
+  "keywords": [
+    "scuttlebutt",
+    "encryption",
+    "security"
+  ],
+  "author": "mixmix",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/ssbc/ssb-recps-guard/issues"
+  },
+  "homepage": "https://github.com/ssbc/ssb-recps-guard#readme",
+  "devDependencies": {
+    "scuttle-testbot": "^1.2.2",
+    "ssb-config": "^3.4.4",
+    "ssb-private1": "^1.0.1",
+    "tap-spec": "^5.0.0",
+    "tape": "^5.0.1"
+  },
+  "dependencies": {
+    "lodash.get": "^4.4.2"
+  }
+}
