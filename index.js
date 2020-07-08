@@ -12,24 +12,22 @@ module.exports = {
     const allowedTypes = getAllowedTypes(ssb, config)
 
     ssb.publish.hook((publish, args) => {
-      const [content, cb] = args
+      const [input, cb] = args
 
-      if (isEncrypted(content)) return publish(content, cb)
-      if (hasRecps(content)) {
-        if (content.allowPublic === true) {
+      if (
+        isEncrypted(input) ||
+        hasRecps(input) ||
+        allowedTypes.has(input.type)
+      ) return publish(input, cb)
+
+      if (isAllowPublic(input)) {
+        if (hasRecps(input.content)) {
           return cb(new Error('recps-guard: should not have recps && allowPublic, check your code'))
         }
-        return publish(content, cb)
+        return publish(input.content, cb)
       }
 
-      if (content.allowPublic === true) {
-        delete content.allowPublic
-        return publish(content, cb)
-      }
-
-      if (allowedTypes.has(content.type)) return publish(content, cb)
-
-      cb(new Error(`recps-guard: public messages of type "${content.type}" not allowed`))
+      cb(new Error(`recps-guard: public messages of type "${input.type}" not allowed`))
     })
 
     /* API */
@@ -56,6 +54,14 @@ function hasRecps (content) {
   if (!content.recps) return false
   if (!Array.isArray(content.recps)) return false
   if (content.recps.length === 0) return false
+
+  return true
+}
+
+function isAllowPublic (input) {
+  if (typeof input !== 'object') return false
+  if (typeof get(input, ['content', 'type']) !== 'string') return false
+  if (get(input, ['options', 'allowPublic']) !== true) return false
 
   return true
 }

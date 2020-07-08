@@ -49,15 +49,15 @@ server.publish(allowedType, (err, msg) => {
 explictly public:
 ```js
 const explicitPublicMsg = {
-  type: 'profile'
-  allowPublic: true // << adding this declares we know this is going public
+  content: { type: 'profile' },
+  options: { allowPublic: true }
 }
 
-server.publish(allowedType, (err, msg) => {
+server.publish(explicitPublicMsg, (err, msg) => {
   console.log(msg.value.content)
   // => { type: 'profile' }
 
-  // NOTE: allowPublic is pruned off
+  // NOTE: only `content` is published
 })
 ```
 
@@ -101,12 +101,14 @@ where `allowedTypes` is an Array of message types which are allowed to be publis
 
 ## Explicit bypass
 
-Messages which would normally be blocked by the guard can add `allowPublic: true`
-and will be passed on to publishing (with this property pruned off).
-See usage example above.
+Messages which would normally be blocked by the guard  bypass the guard by changing what's passed to the
+publish method to be of form `{ content, options: { allowPublic: true } }` 
 
-We considered overloading the `recps` value with magical values,
-but decided a verbose property which couldn't accidentally be filled was safer.
+The `content` is what will be passed to the normal publish function.
+
+Design: this is deliberately verbose to avoid accidental publishing.
+It also has the benefit that if `ssb-guard-recps` isn't installed this publish will error because publish
+will expect the `type` to be in a different place.
 
 ## API
 

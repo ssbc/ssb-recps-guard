@@ -13,14 +13,16 @@ module.exports = (server, t, cb) => {
         t.error(err, 'pre-encrypted content published fine')
         t.equal(typeof data.value.content, 'string', '(msg content encrypted)')
 
-        const msg = { type: 'profile', name: 'mix' }
-        const modifiedMsg = Object.assign({ allowPublic: true }, msg)
-        server.publish(modifiedMsg, (err, data) => {
+        const content = { type: 'profile', name: 'mix' }
+        server.publish({ content, options: { allowPublic: true } }, (err, data) => {
           if (err) return cb(err)
-          t.error(err, 'msgs allowPublic: true allowed')
-          t.deepEqual(data.value.content, msg, '(msg content unencrypted, allowPublic pruned)')
+          t.error(err, 'msgs { content, options: { allowPublic: true } allowed')
+          t.deepEqual(data.value.content, content, '(msg content unencrypted, allowPublic pruned)')
 
-          const weird = { type: 'profile', recps: [server.id], allowPublic: true }
+          const weird = {
+            content: { type: 'profile', recps: [server.id] },
+            options: { allowPublic: true }
+          }
           server.publish(weird, (err, data) => {
             t.match(
               err.message,
