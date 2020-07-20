@@ -2,7 +2,7 @@
 
 Guards against accidentally publishing messages publicly (i.e. unencrypted)
 
-Works by hooking the `publish` method, so **must be installed as the first plugin**
+Works by hooking the `publish` method, so **must be installed as the LAST plugin**
 
 
 ## Example usage
@@ -14,7 +14,8 @@ const caps = require('ssb-caps')
 
 const stack = Stack({ caps })
   .use(require('ssb-db'))           // << required
-  .use(require('ssb-recps-guard'))
+  .use(require('ssb-profile'))
+  .use(require('ssb-recps-guard'))  // << must be last
 
 const config = {
   // see ssb-config for other needed config
@@ -79,9 +80,11 @@ server.publish(privateMsg, (err, msg) => {
 
 ## Installation
 
-Because `ssb-recps-guard` hooks the publish method you **must install it as the first plugin** (after ssb-db).
+Because `ssb-recps-guard` hooks the publish method you **must install it as the LAST plugin**
 If you don't other plugins may also hook the publish and modify messages
 which may break guarentees this plugin tries to offer
+
+(actually we will now throw if anyone else tries to hook publish after this plugin!)
 
 ## Config
 

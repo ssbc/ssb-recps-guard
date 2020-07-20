@@ -30,6 +30,13 @@ module.exports = {
       cb(new Error(`recps-guard: public messages of type "${input.type}" not allowed`))
     })
 
+    ssb.publish.hook = () => {
+      throw new Error('ssb-recps-guard must be the last to hook ssb.publish')
+      // NOTE because of the last hook get run first we need to guarentee
+      // that no other hooks on publish occured after our, otherwise we cannot
+      // guarentee other hooks do not bypass the guard
+    }
+
     /* API */
     return {
       allowedTypes () {
