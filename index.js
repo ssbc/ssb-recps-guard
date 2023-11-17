@@ -42,7 +42,7 @@ module.exports = {
       }
     }
 
-    if (ssb.tribes.publish) {
+    if (ssb.tribes && ssb.tribes.publish) {
       ssb.tribes.publish.hook(publishHook)
 
       ssb.tribes.publish.hook = () => {
@@ -53,7 +53,7 @@ module.exports = {
       }
     }
 
-    if (ssb.db.create) {
+    if (ssb.db && ssb.db.create) {
       ssb.db.create.hook((create, args) => {
         const [input, cb] = args
 
@@ -62,7 +62,7 @@ module.exports = {
           hasRecps(input.content) ||
           allowedTypes.has(input.content.type)
         ) return create(input, cb)
-          console.log('got past first if')
+
         if (isAllowPublic2(input)) {
           if (hasRecps(input.content)) {
             return cb(new Error('recps-guard: should not have recps && allowPublic, check your code'))
@@ -72,13 +72,13 @@ module.exports = {
 
         cb(new Error(`recps-guard: public messages of type "${input.content.type}" not allowed`))
       })
-    }
 
-    ssb.db.create.hook = () => {
-      throw new Error('ssb-recps-guard must be the last to hook ssb.db.create')
-      // NOTE because of the last hook get run first we need to guarentee
-      // that no other hooks on create occured after our, otherwise we cannot
-      // guarentee other hooks do not bypass the guard
+      ssb.db.create.hook = () => {
+        throw new Error('ssb-recps-guard must be the last to hook ssb.db.create')
+        // NOTE because of the last hook get run first we need to guarentee
+        // that no other hooks on create occured after our, otherwise we cannot
+        // guarentee other hooks do not bypass the guard
+      }
     }
 
     /* API */

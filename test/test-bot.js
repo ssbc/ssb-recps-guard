@@ -1,6 +1,6 @@
 const Server = require('scuttle-testbot')
 
-module.exports = function (opts) {
+module.exports = function (opts = {}) {
   // opts = {
   //   name: String,
   //   keys: SecretKeys,
