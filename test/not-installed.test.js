@@ -4,7 +4,9 @@ const test = require('tape')
 test('not installed', t => {
   const ssb = Server // eslint-disable-line
     .use(require('ssb-private1'))
-    .call(null, {})
+    .call(null, {
+      db1: true
+    })
 
   const content = { type: 'profile' }
 
