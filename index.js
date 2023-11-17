@@ -12,7 +12,7 @@ module.exports = {
   init (ssb, config) {
     const allowedTypes = getAllowedTypes(ssb, config)
 
-    const publishHook = (publish, args) => {
+    const publishHook = (keepOptions) => (publish, args) => {
       const [input, cb] = args
 
       if (
@@ -25,14 +25,19 @@ module.exports = {
         if (hasRecps(input.content)) {
           return cb(new Error('recps-guard: should not have recps && allowPublic, check your code'))
         }
-        return publish(input.content, cb)
+
+        if (keepOptions) {
+          return publish({...input.content, options: input.options}, cb)
+        } else {
+          return publish(input.content, cb)
+        }
       }
 
       cb(new Error(`recps-guard: public messages of type "${input.type}" not allowed`))
     }
 
     if (ssb.publish) {
-      ssb.publish.hook(publishHook)
+      ssb.publish.hook(publishHook(false))
 
       ssb.publish.hook = () => {
         throw new Error('ssb-recps-guard must be the last to hook ssb.publish')
@@ -43,7 +48,7 @@ module.exports = {
     }
 
     if (ssb.tribes && ssb.tribes.publish) {
-      ssb.tribes.publish.hook(publishHook)
+      ssb.tribes.publish.hook(publishHook(true))
 
       ssb.tribes.publish.hook = () => {
         throw new Error('ssb-recps-guard must be the last to hook ssb.tribes.publish')
@@ -61,12 +66,23 @@ module.exports = {
           isEncrypted(input.content) ||
           hasRecps(input.content) ||
           allowedTypes.has(input.content.type)
-        ) return create(input, cb)
+        ) {
+          return create(input, cb)
+        }
 
         if (isAllowPublic2(input)) {
           if (hasRecps(input.content)) {
             return cb(new Error('recps-guard: should not have recps && allowPublic, check your code'))
           }
+
+          if (input.content.options) {
+            delete input.content.options.allowPublic
+
+            if (Object.keys(input.content.options).length === 0) {
+              delete input.content.options
+            }
+          }
+
           return create(input, cb)
         }
 

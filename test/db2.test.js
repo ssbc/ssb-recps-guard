@@ -42,13 +42,13 @@ test('db2', async t => {
     .catch(err => {
       t.error(err, 'msgs { content, options: { allowPublic: true } allowed')
     })
-  //await p(server.tribes.publish)({ content, options: { allowPublic: true } })
-  //  .then(data => {
-  //    t.deepEqual(data.value.content, content, '(msg content unencrypted, allowPublic pruned)')
-  //  })
-  //  .catch(err => {
-  //    t.error(err, 'msgs { content, options: { allowPublic: true } allowed')
-  //  })
+  await p(server.tribes.publish)({ content, options: { allowPublic: true } })
+    .then(data => {
+      t.deepEqual(data.value.content, content, '(msg content unencrypted, allowPublic pruned)')
+    })
+    .catch(err => {
+      t.error(err, 'msgs { content, options: { allowPublic: true } allowed')
+    })
 
   const weird = {
     content: { type: 'profile', recps: [server.id] },
