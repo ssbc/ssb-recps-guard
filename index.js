@@ -2,6 +2,7 @@ const get = require('lodash.get')
 const isString = (t) => (typeof t === 'string')
 const isEncrypted = isString
 
+
 module.exports = {
   name: 'recpsGuard',
   version: require('./package.json').version,
@@ -11,7 +12,7 @@ module.exports = {
   init (ssb, config) {
     const allowedTypes = getAllowedTypes(ssb, config)
 
-    ssb.publish.hook((publish, args) => {
+    const publishHook = (publish, args) => {
       const [input, cb] = args
 
       if (
@@ -28,12 +29,55 @@ module.exports = {
       }
 
       cb(new Error(`recps-guard: public messages of type "${input.type}" not allowed`))
-    })
+    }
 
-    ssb.publish.hook = () => {
-      throw new Error('ssb-recps-guard must be the last to hook ssb.publish')
+    if (ssb.publish) {
+      ssb.publish.hook(publishHook)
+
+      ssb.publish.hook = () => {
+        throw new Error('ssb-recps-guard must be the last to hook ssb.publish')
+        // NOTE because of the last hook get run first we need to guarentee
+        // that no other hooks on publish occured after our, otherwise we cannot
+        // guarentee other hooks do not bypass the guard
+      }
+    }
+
+    if (ssb.tribes.publish) {
+      ssb.tribes.publish.hook(publishHook)
+
+      ssb.tribes.publish.hook = () => {
+        throw new Error('ssb-recps-guard must be the last to hook ssb.tribes.publish')
+        // NOTE because of the last hook get run first we need to guarentee
+        // that no other hooks on publish occured after our, otherwise we cannot
+        // guarentee other hooks do not bypass the guard
+      }
+    }
+
+    if (ssb.db.create) {
+      ssb.db.create.hook((create, args) => {
+        const [input, cb] = args
+
+        if (
+          isEncrypted(input.content) ||
+          hasRecps(input.content) ||
+          allowedTypes.has(input.content.type)
+        ) return create(input, cb)
+          console.log('got past first if')
+        if (isAllowPublic2(input)) {
+          if (hasRecps(input.content)) {
+            return cb(new Error('recps-guard: should not have recps && allowPublic, check your code'))
+          }
+          return create(input, cb)
+        }
+
+        cb(new Error(`recps-guard: public messages of type "${input.content.type}" not allowed`))
+      })
+    }
+
+    ssb.db.create.hook = () => {
+      throw new Error('ssb-recps-guard must be the last to hook ssb.db.create')
       // NOTE because of the last hook get run first we need to guarentee
-      // that no other hooks on publish occured after our, otherwise we cannot
+      // that no other hooks on create occured after our, otherwise we cannot
       // guarentee other hooks do not bypass the guard
     }
 
@@ -67,6 +111,14 @@ function hasRecps (content) {
 
 function isAllowPublic (input) {
   if (typeof input !== 'object') return false
+  if (typeof get(input, ['content', 'type']) !== 'string') return false
+  if (get(input, ['options', 'allowPublic']) !== true) return false
+
+  return true
+}
+
+function isAllowPublic2 (input) {
+  if (typeof input.content !== 'object') return false
   if (typeof get(input, ['content', 'type']) !== 'string') return false
   if (get(input, ['options', 'allowPublic']) !== true) return false
 
