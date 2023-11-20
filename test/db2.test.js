@@ -37,41 +37,43 @@ test('db2', async t => {
   content = { type: 'profile', name: 'mix' }
   await p(server.db.create)({ content, options: { allowPublic: true } })
     .then(data => {
-      t.deepEqual(data.value.content, content, '(msg content unencrypted, allowPublic pruned)')
+      t.deepEqual(data.value.content, content, '(msg content unencrypted, allowPublic pruned). db.create')
     })
     .catch(err => {
-      t.error(err, 'msgs { content, options: { allowPublic: true } allowed')
+      t.error(err, 'msgs { content, options: { allowPublic: true } allowed. db.create')
     })
   await p(server.tribes.publish)({ content, options: { allowPublic: true } })
     .then(data => {
-      t.deepEqual(data.value.content, content, '(msg content unencrypted, allowPublic pruned)')
+      t.deepEqual(data.value.content, content, '(msg content unencrypted, allowPublic pruned). tribes.publish')
     })
     .catch(err => {
-      t.error(err, 'msgs { content, options: { allowPublic: true } allowed')
+      t.error(err, 'msgs { content, options: { allowPublic: true } allowed. tribes.publish')
     })
 
   const weird = {
     content: { type: 'profile', recps: [server.id] },
     options: { allowPublic: true }
   }
-  //await p(server.db.create)(weird)
-  //  .then(msg => {
-  //    t.error(msg, "it's supposed to error")
-  //  }).catch(err => {
-  //    t.match(
-  //      err.message,
-  //      /recps-guard: should not have recps && allowPublic, check your code/,
-  //      'disallow recps AND allowPublic'
-  //    )
-  //  })
-  await p(server.tribes.publish)(weird)
+  // TODO: add logs in recps-guard to check why it's managing to encrypt
+  await p(server.db.create)(weird)
     .then(msg => {
-      t.error(msg, "it's supposed to error")
+      console.log("got msg", msg)
+      t.error(msg, "it's supposed to error. db.create")
     }).catch(err => {
       t.match(
         err.message,
         /recps-guard: should not have recps && allowPublic, check your code/,
-        'disallow recps AND allowPublic'
+        'disallow recps AND allowPublic. db.create'
+      )
+    })
+  await p(server.tribes.publish)(weird)
+    .then(msg => {
+      t.error(msg, "it's supposed to error. tribes.publish")
+    }).catch(err => {
+      t.match(
+        err.message,
+        /recps-guard: should not have recps && allowPublic, check your code/,
+        'disallow recps AND allowPublic. tribes.publish'
       )
     })
 

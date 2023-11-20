@@ -64,7 +64,7 @@ module.exports = {
 
         if (
           isEncrypted(input.content) ||
-          hasRecps(input.content) ||
+          (hasRecps(input.content) && !isAllowPublic2(input)) ||
           allowedTypes.has(input.content.type)
         ) {
           return create(input, cb)
