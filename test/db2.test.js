@@ -54,10 +54,8 @@ test('db2', async t => {
     content: { type: 'profile', recps: [server.id] },
     options: { allowPublic: true }
   }
-  // TODO: add logs in recps-guard to check why it's managing to encrypt
   await p(server.db.create)(weird)
     .then(msg => {
-      console.log("got msg", msg)
       t.error(msg, "it's supposed to error. db.create")
     }).catch(err => {
       t.match(

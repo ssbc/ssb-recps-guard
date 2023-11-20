@@ -2,7 +2,6 @@ const get = require('lodash.get')
 const isString = (t) => (typeof t === 'string')
 const isEncrypted = isString
 
-
 module.exports = {
   name: 'recpsGuard',
   version: require('./package.json').version,
