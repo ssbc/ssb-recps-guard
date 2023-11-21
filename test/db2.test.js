@@ -77,3 +77,11 @@ test('db2', async t => {
 
   await p(server.close)()
 })
+
+test('can create a group', async t => {
+  const server = Server({db1: false})
+
+  await p(server.tribes.create)({})
+
+  await p(server.close)()
+})
