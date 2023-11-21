@@ -81,7 +81,8 @@ test('db2', async t => {
 test('can create a group', async t => {
   const server = Server({db1: false})
 
-  await p(server.tribes.create)({})
+  const group = await p(server.tribes.create)({})
+  t.equal(typeof group.groupId, 'string', 'created group with groupId')
 
   await p(server.close)()
 })

@@ -62,6 +62,7 @@ module.exports = {
         const [input, cb] = args
 
         if (
+          input.encryptionFormat !== undefined ||
           isEncrypted(input.content) ||
           (hasRecps(input.content) && !isAllowPublic2(input)) ||
           allowedTypes.has(input.content.type)
