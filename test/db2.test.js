@@ -28,7 +28,7 @@ test('db2', async t => {
     })
 
   content = { type: 'profile', name: 'mix' }
-  await p(server.db.create)({ content, options: { allowPublic: true } })
+  await p(server.db.create)({ content, allowPublic: true })
     .then(data => {
       t.deepEqual(data.value.content, content, '(msg content unencrypted, allowPublic pruned). db.create')
     })
@@ -38,7 +38,7 @@ test('db2', async t => {
 
   const weird = {
     content: { type: 'profile', recps: [server.id] },
-    options: { allowPublic: true }
+    allowPublic: true
   }
   await p(server.db.create)(weird)
     .then(msg => {

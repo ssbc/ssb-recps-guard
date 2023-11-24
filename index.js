@@ -119,9 +119,8 @@ function isAllowPublic (input) {
 }
 
 function isAllowPublic2 (input) {
-  if (typeof input.content !== 'object') return false
-  if (typeof get(input, ['content', 'type']) !== 'string') return false
-  if (get(input, ['options', 'allowPublic']) !== true) return false
+  return input.allowPublic === true
+  if (input.allowPublic !== true) return false
 
   return true
 }
