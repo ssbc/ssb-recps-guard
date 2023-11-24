@@ -111,16 +111,9 @@ function hasRecps (content) {
 }
 
 function isAllowPublic (input) {
-  if (typeof input !== 'object') return false
-  if (typeof get(input, ['content', 'type']) !== 'string') return false
-  if (get(input, ['options', 'allowPublic']) !== true) return false
-
-  return true
+  return get(input, ['options', 'allowPublic']) === true
 }
 
 function isAllowPublic2 (input) {
   return input.allowPublic === true
-  if (input.allowPublic !== true) return false
-
-  return true
 }
