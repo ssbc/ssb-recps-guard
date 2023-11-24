@@ -1,6 +1,5 @@
 const get = require('lodash.get')
 const isString = (t) => (typeof t === 'string')
-const isEncrypted = isString
 
 module.exports = {
   name: 'recpsGuard',
@@ -15,19 +14,26 @@ module.exports = {
       const [input, cb] = args
 
       if (get(input, ['options', 'allowPublic']) === true) {
+        // allowPublic and has recps, disallowed
         if (hasRecps(input.content)) {
           return cb(new Error('recps-guard: should not have recps && allowPublic, check your code'))
         }
 
+        // allowPublic and no recps, allowed
         return publish(input.content, cb)
       } else {
-        if (
-          isEncrypted(input) ||
-          hasRecps(input) ||
-          allowedTypes.has(input.type)
-        ) return publish(input, cb)
+        // without allowPublic, content isn't nested
+        const content = input
 
-        return cb(new Error(`recps-guard: public messages of type "${input.type}" not allowed`))
+        // no allowPublic and has recps/can publish without recps, allowed
+        if (
+          isString(content) ||
+          hasRecps(content) ||
+          allowedTypes.has(content.type)
+        ) return publish(content, cb)
+
+        // no allowPublic and no recps, disallowed
+        return cb(new Error(`recps-guard: public messages of type "${content.type}" not allowed`))
       }
     }
 
@@ -48,7 +54,7 @@ module.exports = {
 
         if (
           input.encryptionFormat !== undefined ||
-          isEncrypted(input.content) ||
+          isString(input.content) ||
           (hasRecps(input.content) && input.allowPublic !== true) ||
           allowedTypes.has(input.content.type)
         ) {
@@ -108,8 +114,4 @@ function hasRecps (content) {
   if (content.recps.length === 0) return false
 
   return true
-}
-
-function isAllowPublic2 (input) {
-  return 
 }
