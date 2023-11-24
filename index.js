@@ -14,21 +14,21 @@ module.exports = {
     const publishHook = (publish, args) => {
       const [input, cb] = args
 
-      if (
-        isEncrypted(input) ||
-        hasRecps(input) ||
-        allowedTypes.has(input.type)
-      ) return publish(input, cb)
-
-      if (isAllowPublic(input)) {
+      if (get(input, ['options', 'allowPublic']) === true) {
         if (hasRecps(input.content)) {
           return cb(new Error('recps-guard: should not have recps && allowPublic, check your code'))
         }
 
         return publish(input.content, cb)
-      }
+      } else {
+        if (
+          isEncrypted(input) ||
+          hasRecps(input) ||
+          allowedTypes.has(input.type)
+        ) return publish(input, cb)
 
-      cb(new Error(`recps-guard: public messages of type "${input.type}" not allowed`))
+        return cb(new Error(`recps-guard: public messages of type "${input.type}" not allowed`))
+      }
     }
 
     if (ssb.publish) {
@@ -49,13 +49,13 @@ module.exports = {
         if (
           input.encryptionFormat !== undefined ||
           isEncrypted(input.content) ||
-          (hasRecps(input.content) && !isAllowPublic2(input)) ||
+          (hasRecps(input.content) && input.allowPublic !== true) ||
           allowedTypes.has(input.content.type)
         ) {
           return create(input, cb)
         }
 
-        if (isAllowPublic2(input)) {
+        if (input.allowPublic === true) {
           if (hasRecps(input.content)) {
             return cb(new Error('recps-guard: should not have recps && allowPublic, check your code'))
           }
@@ -110,10 +110,6 @@ function hasRecps (content) {
   return true
 }
 
-function isAllowPublic (input) {
-  return get(input, ['options', 'allowPublic']) === true
-}
-
 function isAllowPublic2 (input) {
-  return input.allowPublic === true
+  return 
 }
