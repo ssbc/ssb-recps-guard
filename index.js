@@ -11,7 +11,7 @@ module.exports = {
   init (ssb, config) {
     const allowedTypes = getAllowedTypes(ssb, config)
 
-    const publishHook = (keepOptions) => (publish, args) => {
+    const publishHook = (publish, args) => {
       const [input, cb] = args
 
       if (
@@ -25,18 +25,14 @@ module.exports = {
           return cb(new Error('recps-guard: should not have recps && allowPublic, check your code'))
         }
 
-        if (keepOptions) {
-          return publish({...input.content, options: input.options}, cb)
-        } else {
-          return publish(input.content, cb)
-        }
+        return publish(input.content, cb)
       }
 
       cb(new Error(`recps-guard: public messages of type "${input.type}" not allowed`))
     }
 
     if (ssb.publish) {
-      ssb.publish.hook(publishHook(false))
+      ssb.publish.hook(publishHook)
 
       ssb.publish.hook = () => {
         throw new Error('ssb-recps-guard must be the last to hook ssb.publish')
