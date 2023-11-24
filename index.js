@@ -46,17 +46,6 @@ module.exports = {
       }
     }
 
-    if (ssb.tribes && ssb.tribes.publish) {
-      ssb.tribes.publish.hook(publishHook(true))
-
-      ssb.tribes.publish.hook = () => {
-        throw new Error('ssb-recps-guard must be the last to hook ssb.tribes.publish')
-        // NOTE because of the last hook get run first we need to guarentee
-        // that no other hooks on publish occured after our, otherwise we cannot
-        // guarentee other hooks do not bypass the guard
-      }
-    }
-
     if (ssb.db && ssb.db.create) {
       ssb.db.create.hook((create, args) => {
         const [input, cb] = args

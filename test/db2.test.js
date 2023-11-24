@@ -15,18 +15,11 @@ test('db2', async t => {
   await p(server.tribes.publish)(content)
     .then(msg => t.error(msg, "shouldn't get msg on err"))
     .catch((err) => {
-      t.match(err.message, /recps-guard: public messages of type "profile" not allowed/, 'public blocked')
+      t.match(err.message, /tribes.publish requires content.recps/, "tribes.publish can't publish public at all")
     })
 
   content = { type: 'profile', recps: [server.id] }
   await p(server.db.create)({content})
-    .then(data => {
-      t.equal(typeof data.value.content, 'string', '(msg content encrypted)')
-    })
-    .catch(err => {
-      t.error(err, 'msgs with recps allowed')
-    })
-  await p(server.tribes.publish)(content)
     .then(data => {
       t.equal(typeof data.value.content, 'string', '(msg content encrypted)')
     })
@@ -42,13 +35,6 @@ test('db2', async t => {
     .catch(err => {
       t.error(err, 'msgs { content, options: { allowPublic: true } allowed. db.create')
     })
-  await p(server.tribes.publish)({ content, options: { allowPublic: true } })
-    .then(data => {
-      t.deepEqual(data.value.content, content, '(msg content unencrypted, allowPublic pruned). tribes.publish')
-    })
-    .catch(err => {
-      t.error(err, 'msgs { content, options: { allowPublic: true } allowed. tribes.publish')
-    })
 
   const weird = {
     content: { type: 'profile', recps: [server.id] },
@@ -62,16 +48,6 @@ test('db2', async t => {
         err.message,
         /recps-guard: should not have recps && allowPublic, check your code/,
         'disallow recps AND allowPublic. db.create'
-      )
-    })
-  await p(server.tribes.publish)(weird)
-    .then(msg => {
-      t.error(msg, "it's supposed to error. tribes.publish")
-    }).catch(err => {
-      t.match(
-        err.message,
-        /recps-guard: should not have recps && allowPublic, check your code/,
-        'disallow recps AND allowPublic. tribes.publish'
       )
     })
 
