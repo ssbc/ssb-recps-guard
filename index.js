@@ -10,36 +10,64 @@ module.exports = {
   init (ssb, config) {
     const allowedTypes = getAllowedTypes(ssb, config)
 
-    const publishHook = ({ db2 }) => (publish, args) => {
+    const publishHook = (publish, args) => {
       const [input, cb] = args
 
-      if (db2 ? input.allowPublic === true : get(input, ['options', 'allowPublic']) === true) {
+      if (get(input, ['options', 'allowPublic']) === true) {
         // allowPublic and has recps, disallowed
         if (hasRecps(input.content)) {
           return cb(new Error('recps-guard: should not have recps && allowPublic, check your code'))
         }
 
         // allowPublic and no recps, allowed
-        return publish(db2 ? input : input.content, cb)
+        return publish(input.content, cb)
       } else {
         // without allowPublic, content isn't nested with db1 publish
-        const content = db2 ? input.content : input
+        const content = input
 
         // no allowPublic and has recps/can publish without recps, allowed
         if (
-          (db2 ? (input.encryptionFormat !== undefined) : false) ||
           isString(content) ||
           hasRecps(content) ||
           allowedTypes.has(content.type)
-        ) return publish(db2 ? input : content, cb)
+        ) return publish(content, cb)
 
         // no allowPublic and no recps, disallowed
         return cb(new Error(`recps-guard: public messages of type "${content.type}" not allowed`))
       }
     }
 
+    const createHook = (create, args) => {
+      const [input, cb] = args
+
+      if (input.allowPublic === true) {
+        // allowPublic and has recps, disallowed
+        if (hasRecps(input.content)) {
+          return cb(new Error('recps-guard: should not have recps && allowPublic, check your code'))
+        }
+
+        // allowPublic and no recps, allowed
+        return create(input, cb)
+      } else {
+        // without allowPublic, content isn't nested with db1 publish
+        const content = input.content
+
+        // no allowPublic and has recps/can publish without recps, allowed
+        if (
+          (input.encryptionFormat !== undefined) ||
+          isString(content) ||
+          hasRecps(content) ||
+          allowedTypes.has(content.type)
+        ) return create(input, cb)
+
+        // no allowPublic and no recps, disallowed
+        return cb(new Error(`recps-guard: public messages of type "${content.type}" not allowed`))
+      }
+
+    }
+
     if (ssb.publish) {
-      ssb.publish.hook(publishHook({ db2: false }))
+      ssb.publish.hook(publishHook)
 
       ssb.publish.hook = () => {
         throw new Error('ssb-recps-guard must be the last to hook ssb.publish')
@@ -50,7 +78,7 @@ module.exports = {
     }
 
     if (ssb.db && ssb.db.create) {
-      ssb.db.create.hook(publishHook({ db2: true }))
+      ssb.db.create.hook(createHook)
 
       ssb.db.create.hook = () => {
         throw new Error('ssb-recps-guard must be the last to hook ssb.db.create')
