@@ -29,7 +29,7 @@
     "ssb-config": "^3.4.6",
     "ssb-db2": "^8.1.0",
     "ssb-private1": "^1.0.1",
-    "ssb-tribes": "github:ssbc/ssb-tribes",
+    "ssb-tribes": "^4.0.0",
     "tap-spec": "^5.0.0",
     "tape": "^5.7.2"
   },
