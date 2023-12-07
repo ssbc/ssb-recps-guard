@@ -22,11 +22,16 @@
   },
   "homepage": "https://github.com/ssbc/ssb-recps-guard#readme",
   "devDependencies": {
-    "scuttle-testbot": "^1.2.2",
-    "ssb-config": "^3.4.4",
+    "scuttle-testbot": "^2.2.0",
+    "ssb-box": "^1.0.1",
+    "ssb-box2": "^7.4.0",
+    "ssb-classic": "^1.1.0",
+    "ssb-config": "^3.4.6",
+    "ssb-db2": "^8.1.0",
     "ssb-private1": "^1.0.1",
+    "ssb-tribes": "^4.0.0",
     "tap-spec": "^5.0.0",
-    "tape": "^5.0.1"
+    "tape": "^5.7.2"
   },
   "dependencies": {
     "lodash.get": "^4.4.2"

@@ -1,6 +1,5 @@
 const get = require('lodash.get')
 const isString = (t) => (typeof t === 'string')
-const isEncrypted = isString
 
 module.exports = {
   name: 'recpsGuard',
@@ -11,30 +10,82 @@ module.exports = {
   init (ssb, config) {
     const allowedTypes = getAllowedTypes(ssb, config)
 
-    ssb.publish.hook((publish, args) => {
+    const publishHook = (publish, args) => {
       const [input, cb] = args
 
-      if (
-        isEncrypted(input) ||
-        hasRecps(input) ||
-        allowedTypes.has(input.type)
-      ) return publish(input, cb)
-
-      if (isAllowPublic(input)) {
+      if (get(input, ['options', 'allowPublic']) === true) {
+        // allowPublic and has recps, disallowed
         if (hasRecps(input.content)) {
           return cb(new Error('recps-guard: should not have recps && allowPublic, check your code'))
         }
+
+        // allowPublic and no recps, allowed
         return publish(input.content, cb)
+      } else {
+        // without allowPublic, content isn't nested with db1 publish
+        const content = input
+
+        // no allowPublic and has recps/can publish without recps, allowed
+        if (
+          isString(content) ||
+          hasRecps(content) ||
+          allowedTypes.has(content.type)
+        ) return publish(content, cb)
+
+        // no allowPublic and no recps, disallowed
+        return cb(new Error(`recps-guard: public messages of type "${content.type}" not allowed`))
+      }
+    }
+
+    const createHook = (create, args) => {
+      const [input, cb] = args
+
+      if (input.allowPublic === true) {
+        // allowPublic and has recps, disallowed
+        if (hasRecps(input.content)) {
+          return cb(new Error('recps-guard: should not have recps && allowPublic, check your code'))
+        }
+
+        // allowPublic and no recps, allowed
+        return create(input, cb)
+      } else {
+        // without allowPublic, content isn't nested with db1 publish
+        const content = input.content
+
+        // no allowPublic and has recps/can publish without recps, allowed
+        if (
+          input.encryptionFormat ||
+          isString(content) ||
+          hasRecps(content) ||
+          allowedTypes.has(content.type)
+        ) return create(input, cb)
+
+        // no allowPublic and no recps, disallowed
+        return cb(new Error(`recps-guard: public messages of type "${content.type}" not allowed`))
       }
 
-      cb(new Error(`recps-guard: public messages of type "${input.type}" not allowed`))
-    })
+    }
 
-    ssb.publish.hook = () => {
-      throw new Error('ssb-recps-guard must be the last to hook ssb.publish')
-      // NOTE because of the last hook get run first we need to guarentee
-      // that no other hooks on publish occured after our, otherwise we cannot
-      // guarentee other hooks do not bypass the guard
+    if (ssb.publish) {
+      ssb.publish.hook(publishHook)
+
+      ssb.publish.hook = () => {
+        throw new Error('ssb-recps-guard must be the last to hook ssb.publish')
+        // NOTE because of the last hook get run first we need to guarentee
+        // that no other hooks on publish occured after our, otherwise we cannot
+        // guarentee other hooks do not bypass the guard
+      }
+    }
+
+    if (ssb.db && ssb.db.create) {
+      ssb.db.create.hook(createHook)
+
+      ssb.db.create.hook = () => {
+        throw new Error('ssb-recps-guard must be the last to hook ssb.db.create')
+        // NOTE because of the last hook get run first we need to guarentee
+        // that no other hooks on create occured after our, otherwise we cannot
+        // guarentee other hooks do not bypass the guard
+      }
     }
 
     /* API */
@@ -61,14 +112,6 @@ function hasRecps (content) {
   if (!content.recps) return false
   if (!Array.isArray(content.recps)) return false
   if (content.recps.length === 0) return false
-
-  return true
-}
-
-function isAllowPublic (input) {
-  if (typeof input !== 'object') return false
-  if (typeof get(input, ['content', 'type']) !== 'string') return false
-  if (get(input, ['options', 'allowPublic']) !== true) return false
 
   return true
 }

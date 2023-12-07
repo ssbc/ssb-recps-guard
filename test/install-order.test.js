@@ -18,7 +18,9 @@ test('installed in right order', t => {
       }
     })
     .use(require('../')) // ssb-recps-guard
-    .call(null, {})
+    .call(null, {
+      db1: true
+    })
 
   const input = {
     content,

@@ -60,6 +60,19 @@ server.publish(explicitPublicMsg, (err, msg) => {
 
   // NOTE: only `content` is published
 })
+
+// with ssb-db2's ssb.db.create, note different option format!
+const explicitPublicMsgDb2 = {
+  content: { type: 'profile' },
+  allowPublic: true
+}
+
+server.db.create(explicitPublicMsgDb2, (err, msg) => {
+  console.log(msg.value.content)
+  // => { type: 'profile' }
+
+  // NOTE: only `content` is published (as usual)
+})
 ```
 
 private: 
