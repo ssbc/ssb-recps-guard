@@ -54,7 +54,7 @@ module.exports = {
 
         // no allowPublic and has recps/can publish without recps, allowed
         if (
-          (input.encryptionFormat !== undefined) ||
+          input.encryptionFormat ||
           isString(content) ||
           hasRecps(content) ||
           allowedTypes.has(content.type)
