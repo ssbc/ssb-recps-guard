@@ -4,7 +4,9 @@
   "description": "guards against unencrypted messages being accidentally published!",
   "main": "index.js",
   "scripts": {
-    "test": "tape test/**/*.test.js | tap-spec"
+    "test": "npm run test:js && npm run lint",
+    "test:js": "tape test/**/*.test.js | tap-arc",
+    "lint": "standard --fix"
   },
   "repository": {
     "type": "git",
@@ -21,6 +23,9 @@
     "url": "https://github.com/ssbc/ssb-recps-guard/issues"
   },
   "homepage": "https://github.com/ssbc/ssb-recps-guard#readme",
+  "dependencies": {
+    "lodash.get": "^4.4.2"
+  },
   "devDependencies": {
     "scuttle-testbot": "^2.2.0",
     "ssb-box": "^1.0.1",
@@ -30,10 +35,8 @@
     "ssb-db2": "^8.1.0",
     "ssb-private1": "^1.0.1",
     "ssb-tribes": "^4.0.0",
-    "tap-spec": "^5.0.0",
+    "standard": "^17.1.0",
+    "tap-arc": "^1.2.2",
     "tape": "^5.7.2"
-  },
-  "dependencies": {
-    "lodash.get": "^4.4.2"
   }
 }

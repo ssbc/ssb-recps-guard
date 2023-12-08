@@ -1,5 +1,13 @@
+/* eslint-disable brace-style */
 const get = require('lodash.get')
+
 const isString = (t) => (typeof t === 'string')
+const NotBothError = () => new Error(
+  'recps-guard: should not have recps && allowPublic, check your code'
+)
+const NotAllowedTypeError = (type) => new Error(
+  `recps-guard: public messages of type "${type}" not allowed`
+)
 
 module.exports = {
   name: 'recpsGuard',
@@ -9,61 +17,57 @@ module.exports = {
   },
   init (ssb, config) {
     const allowedTypes = getAllowedTypes(ssb, config)
+    const isAllowedType = (type) => allowedTypes.has(type)
 
-    const publishHook = (publish, args) => {
+    function publishHook (publish, args) {
       const [input, cb] = args
 
-      if (get(input, ['options', 'allowPublic']) === true) {
-        // allowPublic and has recps, disallowed
-        if (hasRecps(input.content)) {
-          return cb(new Error('recps-guard: should not have recps && allowPublic, check your code'))
-        }
+      const isExplictAllow = (
+        input.allowPublic === true ||
+        get(input, ['options', 'allowPublic']) === true // legacy support
+      )
 
-        // allowPublic and no recps, allowed
-        return publish(input.content, cb)
-      } else {
-        // without allowPublic, content isn't nested with db1 publish
+      if (isExplictAllow) {
+        const content = input.content
+
+        if (hasRecps(content)) cb(NotBothError())
+        else publish(content, cb)
+      }
+      else {
         const content = input
 
-        // no allowPublic and has recps/can publish without recps, allowed
-        if (
-          isString(content) ||
+        const isAllowed = (
+          isString(content) || // already encrypted
           hasRecps(content) ||
-          allowedTypes.has(content.type)
-        ) return publish(content, cb)
+          isAllowedType(content.type)
+        )
 
-        // no allowPublic and no recps, disallowed
-        return cb(new Error(`recps-guard: public messages of type "${content.type}" not allowed`))
+        if (isAllowed) publish(content, cb)
+        else cb(NotAllowedTypeError(content.type))
       }
     }
 
-    const createHook = (create, args) => {
+    function createHook (create, args) {
       const [input, cb] = args
 
       if (input.allowPublic === true) {
-        // allowPublic and has recps, disallowed
-        if (hasRecps(input.content)) {
-          return cb(new Error('recps-guard: should not have recps && allowPublic, check your code'))
-        }
+        if (hasRecps(input.content)) return cb(NotBothError())
 
-        // allowPublic and no recps, allowed
         return create(input, cb)
-      } else {
-        // without allowPublic, content isn't nested with db1 publish
+      }
+      else {
         const content = input.content
 
-        // no allowPublic and has recps/can publish without recps, allowed
-        if (
-          input.encryptionFormat ||
-          isString(content) ||
+        const isAllowed = (
+          isString(content) || // already encrypted
+          input.encryptionFormat || // signed up for encryption
           hasRecps(content) ||
-          allowedTypes.has(content.type)
-        ) return create(input, cb)
+          isAllowedType(content.type)
+        )
 
-        // no allowPublic and no recps, disallowed
-        return cb(new Error(`recps-guard: public messages of type "${content.type}" not allowed`))
+        if (isAllowed) create(input, cb)
+        else cb(NotAllowedTypeError(content.type))
       }
-
     }
 
     if (ssb.publish) {

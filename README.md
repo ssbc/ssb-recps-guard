@@ -51,7 +51,7 @@ explictly public:
 ```js
 const explicitPublicMsg = {
   content: { type: 'profile' },
-  options: { allowPublic: true }
+  allowPublic: true
 }
 
 server.publish(explicitPublicMsg, (err, msg) => {
