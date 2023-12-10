@@ -9,6 +9,8 @@ const NotAllowedTypeError = (type) => new Error(
   `recps-guard: public messages of type "${type}" not allowed`
 )
 
+let warnings = 0
+
 module.exports = {
   name: 'recpsGuard',
   version: require('./package.json').version,
@@ -22,10 +24,14 @@ module.exports = {
     function publishHook (publish, args) {
       const [input, cb] = args
 
-      const isExplictAllow = (
-        input.allowPublic === true ||
-        get(input, ['options', 'allowPublic']) === true // legacy support
-      )
+      const modernAllow = input.allowPublic === true
+      const legacyAllow = get(input, ['options', 'allowPublic']) === true
+      if (legacyAllow && warnings < 5) {
+        console.trace('input.options.allowPublic is deprecated, please use input.allowPublic')
+        warnings++
+      }
+
+      const isExplictAllow = (modernAllow || legacyAllow)
 
       if (isExplictAllow) {
         const content = input.content

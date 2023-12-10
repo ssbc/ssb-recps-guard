@@ -33,7 +33,7 @@ test('db2', async t => {
       t.deepEqual(data.value.content, content, '(msg content unencrypted, allowPublic pruned). db.create')
     })
     .catch(err => {
-      t.error(err, 'msgs { content, options: { allowPublic: true } allowed. db.create')
+      t.error(err, 'msgs { content, { allowPublic: true } db.create')
     })
 
   const weird = {

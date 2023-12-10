@@ -24,7 +24,7 @@ test('installed in right order', t => {
 
   const input = {
     content,
-    options: { allowPublic: true }
+    allowPublic: true
   }
 
   server.publish(input, (err, msg) => {
