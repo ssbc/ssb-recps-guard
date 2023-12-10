@@ -24,7 +24,7 @@ test('installed in right order', t => {
 
   const input = {
     content,
-    options: { allowPublic: true }
+    allowPublic: true
   }
 
   server.publish(input, (err, msg) => {
@@ -40,7 +40,7 @@ test('installed in right order', t => {
 test('installed in wrong order', { skip: true }, t => {
   t.plan(2) // goodHook + throw
 
-  var server
+  let server
   t.throws(
     () => {
        server = Server // eslint-disable-line

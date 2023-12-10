@@ -13,8 +13,7 @@ const caps = require('ssb-caps')
 
 
 const stack = Stack({ caps })
-  .use(require('ssb-db'))           // << required
-  .use(require('ssb-profile'))
+  .use(require('ssb-d2'))
   .use(require('ssb-recps-guard'))  // << must be last
 
 const config = {
@@ -28,9 +27,11 @@ const sever = stack(config)
 
 auto-blocked:
 ```js
-const unallowedMsg = { type: 'profile' }
+const unallowedMsg = {
+  content: { type: 'profile' }
+}
 
-server.publish(unallowedMsg, (err, msg) => {
+server.db.create(unallowedMsg, (err, msg) => {
   console.log(err)
   // => Error: recps-guard - no accidental public messages allowed!
 })
@@ -38,10 +39,12 @@ server.publish(unallowedMsg, (err, msg) => {
 
 config-allowed:
 ```js
-const allowedMsg = { type: 'contact' }
+const allowedMsg = {
+  content: { type: 'contact' }
+}
 // this type was allowed in our config (see above)
 
-server.publish(allowedType, (err, msg) => {
+server.db.create(allowedType, (err, msg) => {
   console.log(msg.value.content)
   // => { type: 'contact' }
 })
@@ -51,38 +54,26 @@ explictly public:
 ```js
 const explicitPublicMsg = {
   content: { type: 'profile' },
-  options: { allowPublic: true }
-}
-
-server.publish(explicitPublicMsg, (err, msg) => {
-  console.log(msg.value.content)
-  // => { type: 'profile' }
-
-  // NOTE: only `content` is published
-})
-
-// with ssb-db2's ssb.db.create, note different option format!
-const explicitPublicMsgDb2 = {
-  content: { type: 'profile' },
   allowPublic: true
 }
 
-server.db.create(explicitPublicMsgDb2, (err, msg) => {
+server.db.create(explicitPublicMsg, (err, msg) => {
   console.log(msg.value.content)
   // => { type: 'profile' }
-
-  // NOTE: only `content` is published (as usual)
 })
 ```
+
 
 private: 
 ```js
 const privateMsg = {
-  type: 'profile'
-  recps: ['@ye+QM09iPcDJD6YvQYjoQc7sLF/IFhmNbEqgdzQo3lQ=.ed25519']
+  content: {
+    type: 'profile'
+    recps: ['@ye+QM09iPcDJD6YvQYjoQc7sLF/IFhmNbEqgdzQo3lQ=.ed25519']
+  }
 }
 
-server.publish(privateMsg, (err, msg) => {
+server.db.create(privateMsg, (err, msg) => {
   console.log(msg.value.content)
   // => VayTFa.....yZ3Wqsg==.box
 
@@ -90,6 +81,21 @@ server.publish(privateMsg, (err, msg) => {
   // (in this example by ssb-private1, assuming that was installed)
 })
 ```
+
+NOTE that if you are using _classic_ `ssb-db`, the API behaves the same:
+
+```js
+const explicitPublicMsgDB1 = {
+  content: { type: 'profile' },
+  allowPublic: true
+}
+
+server.db.create(explicitPublicMsgDN!, (err, msg) => {
+  console.log(msg.value.content)
+  // => { type: 'profile' }
+})
+```
+
 
 ## Installation
 
@@ -118,13 +124,14 @@ where `allowedTypes` is an Array of message types which are allowed to be publis
 ## Explicit bypass
 
 Messages which would normally be blocked by the guard  bypass the guard by changing what's passed to the
-publish method to be of form `{ content, options: { allowPublic: true } }` 
+publish method to be of form `{ content, allowPublic: true }` 
 
 The `content` is what will be passed to the normal publish function.
 
 Design: this is deliberately verbose to avoid accidental publishing.
 It also has the benefit that if `ssb-guard-recps` isn't installed this publish will error because publish
 will expect the `type` to be in a different place.
+
 
 ## API
 

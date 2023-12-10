@@ -3,11 +3,11 @@ const test = require('tape')
 const Server = require('./test-bot')
 
 test('db2', async t => {
-  const server = Server({db1: false})
+  const server = Server({ db1: false })
   t.deepEqual(server.recpsGuard.allowedTypes(), [], 'recps.allowedTypes')
 
   let content = { type: 'profile' }
-  await p(server.db.create)({content})
+  await p(server.db.create)({ content })
     .then(msg => t.error(msg, "shouldn't get msg on err"))
     .catch((err) => {
       t.match(err.message, /recps-guard: public messages of type "profile" not allowed/, 'public blocked')
@@ -19,7 +19,7 @@ test('db2', async t => {
     })
 
   content = { type: 'profile', recps: [server.id] }
-  await p(server.db.create)({content})
+  await p(server.db.create)({ content })
     .then(data => {
       t.equal(typeof data.value.content, 'string', '(msg content encrypted)')
     })
@@ -33,7 +33,7 @@ test('db2', async t => {
       t.deepEqual(data.value.content, content, '(msg content unencrypted, allowPublic pruned). db.create')
     })
     .catch(err => {
-      t.error(err, 'msgs { content, options: { allowPublic: true } allowed. db.create')
+      t.error(err, 'msgs { content, { allowPublic: true } db.create')
     })
 
   const weird = {
@@ -55,7 +55,7 @@ test('db2', async t => {
 })
 
 test('can create a group', async t => {
-  const server = Server({db1: false})
+  const server = Server({ db1: false })
 
   const group = await p(server.tribes.create)({})
   t.equal(typeof group.groupId, 'string', 'created group with groupId')

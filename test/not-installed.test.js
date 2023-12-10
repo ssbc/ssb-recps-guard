@@ -10,7 +10,7 @@ test('not installed', t => {
 
   const content = { type: 'profile' }
 
-  ssb.publish({ content, options: { allowPublic: true } }, (err) => {
+  ssb.publish({ content, allowPublic: true }, (err) => {
     t.match(err.message, /type must be a string/)
     ssb.close(t.end)
   })
