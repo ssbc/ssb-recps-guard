@@ -1,6 +1,6 @@
 {
   "name": "ssb-recps-guard",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "guards against unencrypted messages being accidentally published!",
   "main": "index.js",
   "scripts": {
