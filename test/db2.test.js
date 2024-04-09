@@ -12,6 +12,7 @@ test('db2', async t => {
     .catch((err) => {
       t.match(err.message, /recps-guard: public messages of type "profile" not allowed/, 'public blocked')
     })
+
   await p(server.tribes.publish)(content)
     .then(msg => t.error(msg, "shouldn't get msg on err"))
     .catch((err) => {
